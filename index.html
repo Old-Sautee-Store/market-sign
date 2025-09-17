@@ -1,53 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Flashing Images</title>
+  <meta charset="UTF-8" />
+  <title>Cycling Background + Flash + Border</title>
   <style>
+    /* Page centering */
     body {
       margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
+
+    /* Stage */
     .container {
       position: relative;
       display: inline-block;
+      line-height: 0; /* avoid gaps from inline images */
     }
-    .back {
+
+    /* This image sets the container's width/height (layout only) */
+    .sizer {
       display: block;
       width: 100%;
       height: auto;
-    }
-    .front {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: auto;
-      animation: flash 10s infinite;
+      visibility: hidden;     /* keeps layout, hides visually */
+      pointer-events: none;
     }
 
-    /* 10s total:
-       - First 20% (2s): flash sequence
-       - Remaining 80% (8s): stay on
-    */
+    /* All overlays sit on top of the sizer and fill the container */
+    .layer {
+      position: absolute;
+      inset: 0;              /* top:0 right:0 bottom:0 left:0 */
+      width: 100%;
+      height: 100%;
+      object-fit: contain;   /* in case images differ slightly */
+      display: block;
+    }
+
+/* Back cycle: 4 images, 8s each (32s total), HARD CUTS */
+.back {
+  opacity: 1;
+  visibility: hidden;
+  animation: swapVis 32s linear infinite both;
+  z-index: 1;
+}
+
+/* Run all four in sync, offset by 8s each */
+.back1 { animation-delay:   0s; }
+.back2 { animation-delay:  -8s; }
+.back3 { animation-delay: -16s; }
+.back4 { animation-delay: -24s; }
+
+/* Each image is visible only during its 0–25% window of the 32s cycle (8s) */
+@keyframes swapVis {
+  0%, 24.999% { visibility: visible; }  /* show for 8s */
+  25%, 100%   { visibility: hidden; }   /* instantly hide */
+}
+
+    /* Front flashing (10s total: first 2s flash, then visible) */
+    .front {
+      z-index: 2;
+      animation: flash 10s infinite;
+    }
     @keyframes flash {
       0%   { opacity: 0; }
       5%   { opacity: 0; }   /* 0.5s */
-      10%  { opacity: 1; }   /* 1s */
+      10%  { opacity: 1; }   /* 1s   */
       15%  { opacity: 0; }   /* 1.5s */
-      20%  { opacity: 1; }   /* 2s */
-      100% { opacity: 1; }   /* stay visible */
+      20%  { opacity: 1; }   /* 2s   */
+      100% { opacity: 1; }   /* stay on */
+    }
+
+    /* Border gentle pulse */
+    .border {
+      z-index: 3;
+      animation: borderPulse 6s ease-in-out infinite;
+    }
+    @keyframes borderPulse {
+      0%   { opacity: 1; }
+      50%  { opacity: 0.75; }
+      100% { opacity: 1; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="./back-landscape.png" alt="Back Image" class="back">
-    <img src="./front-landscape.png" alt="Front Image" class="front">
+    <!-- Layout sizer: MUST MATCH the size of your back images -->
+    <!-- IMPORTANT: match exact filename/case as in the repo -->
+    <img src="./back-landscape.png" alt="" class="sizer" aria-hidden="true" />
+
+    <!-- Background cycle -->
+    <img src="./back-landscape.png"        alt="Back 1" class="layer back" />
+    <img src="./back-landscape.png"        alt="Back 1" class="layer back back1" />
+    <img src="./back-two.png"    alt="Back 2" class="layer back back2" />
+    <img src="./back-three.png"  alt="Back 3" class="layer back back3" />
+    <img src="./back-four.png"   alt="Back 4" class="layer back back4" />
+
+    <!-- Foreground + border -->
+    <img src="./front-landscape.png"   alt="Front"  class="layer front" />
+    <img src="./border.png"  alt="Border" class="layer border" />
   </div>
 </body>
 </html>
